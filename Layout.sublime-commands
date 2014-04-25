@@ -1,0 +1,16 @@
+[
+  { "command": "split_pane", "args": {"commands": ["v"]}, "caption": "Layout: Split Current Pane Vertical" },
+  { "command": "split_pane", "args": {"commands": ["h"]}, "caption": "Layout: Split Current Pane Horizontal" },
+  { "command": "destroy_current_pane", "caption": "Layout: Destroy Current Pane" },
+  { "command": "combine_all_panes", "caption": "Layout: Combine All Panes to One Pane" },
+
+  { "command": "carry_file_to_pane", "args": {"direction": "left"}, "caption": "Layout: Move File to Pane on the Left" },
+  { "command": "carry_file_to_pane", "args": {"direction": "right"}, "caption": "Layout: Move File to Pane on the Right" },
+  { "command": "carry_file_to_pane", "args": {"direction": "up"}, "caption": "Layout: Move File to Pane on the Above" },
+  { "command": "carry_file_to_pane", "args": {"direction": "down"}, "caption": "Layout: Move File to Pane on the Below" },
+
+  { "command": "clone_file_to_pane", "args": {"direction": "left"}, "caption": "Layout: Clone File to Pane Left" },
+  { "command": "clone_file_to_pane", "args": {"direction": "right"}, "caption": "Layout: Clone File to Pane Right" },
+  { "command": "clone_file_to_pane", "args": {"direction": "up"}, "caption": "Layout: Clone File to Pane Above" },
+  { "command": "clone_file_to_pane", "args": {"direction": "down"}, "caption": "Layout: Clone File to Pane Below" },
+]

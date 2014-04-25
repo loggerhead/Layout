@@ -1,0 +1,32 @@
+[
+  // { "keys": ["alt+d"], "command": "debug"},
+
+  // { "keys": ["ctrl+w", "ctrl+z"], "command": "undo_layout" },
+  // { "keys": ["ctrl+w", "ctrl+s"], "command": "save_layout" },
+  // { "keys": ["ctrl+w", "ctrl+shift+s"], "command": "save_layout_to" },
+  // { "keys": ["ctrl+w", "ctrl+o"], "command": "load_layout_from" },
+  { "keys": ["ctrl+w", "ctrl+tab"], "command": "cycle_between_panes"},
+  { "keys": ["ctrl+w", "ctrl+`"], "command": "reverse_cycle_between_panes"},
+
+  { "keys": ["ctrl+w", "|"], "command": "split_pane", "args": {"commands": ["v"]} },
+  { "keys": ["ctrl+w", "-"], "command": "split_pane", "args": {"commands": ["h"]} },
+  { "keys": ["ctrl+w", "h"], "command": "move_to_pane", "args": {"direction": "left"} },
+  { "keys": ["ctrl+w", "l"], "command": "move_to_pane", "args": {"direction": "right"} },
+  { "keys": ["ctrl+w", "k"], "command": "move_to_pane", "args": {"direction": "up"} },
+  { "keys": ["ctrl+w", "j"], "command": "move_to_pane", "args": {"direction": "down"} },
+  { "keys": ["ctrl+w", "x"], "command": "destroy_current_pane" },
+  { "keys": ["ctrl+w", "1"], "command": "combine_all_panes" },
+  { "keys": ["ctrl+w", "2"], "command": "split_pane", "args": {"commands": ["V"]} },
+  { "keys": ["ctrl+w", "3"], "command": "split_pane", "args": {"commands": ["V", "1H"]} },
+  { "keys": ["ctrl+w", "4"], "command": "split_pane", "args": {"commands": ["H70", "0V50", "2V50"]} },
+
+  { "keys": ["ctrl+w", "H"], "command": "carry_file_to_pane", "args": {"direction": "left"} },
+  { "keys": ["ctrl+w", "L"], "command": "carry_file_to_pane", "args": {"direction": "right"} },
+  { "keys": ["ctrl+w", "K"], "command": "carry_file_to_pane", "args": {"direction": "up"} },
+  { "keys": ["ctrl+w", "J"], "command": "carry_file_to_pane", "args": {"direction": "down"} },
+
+  { "keys": ["ctrl+w", "alt+h"], "command": "clone_file_to_pane", "args": {"direction": "left"} },
+  { "keys": ["ctrl+w", "alt+l"], "command": "clone_file_to_pane", "args": {"direction": "right"} },
+  { "keys": ["ctrl+w", "alt+k"], "command": "clone_file_to_pane", "args": {"direction": "up"} },
+  { "keys": ["ctrl+w", "alt+j"], "command": "clone_file_to_pane", "args": {"direction": "down"} },
+]
