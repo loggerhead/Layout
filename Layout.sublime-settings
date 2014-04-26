@@ -1,3 +1,8 @@
 {
-    "max_history_layout": 100
+    "max_move_history": 100,
+    "max_layout_history": 10,
+    // auto close when carry away or close last view
+    "auto_destroy_pane": true,
+    // auto close all tab view in the pane when destroyed
+    "auto_close_view": true,
 }

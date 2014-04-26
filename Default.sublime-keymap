@@ -1,10 +1,12 @@
 [
-  // { "keys": ["alt+d"], "command": "debug"},
+  { "keys": ["ctrl+w", "ctrl+s"], "command": "save_layout_as", "args": {"filename": "_last_one"} },
+  { "keys": ["ctrl+w", "ctrl+shift+s"], "command": "save_layout_as" },
+  { "keys": ["ctrl+w", "ctrl+o"], "command": "load_layout_from", "args": {"filename": "_last_one"} },
+  { "keys": ["ctrl+w", "ctrl+z"], "command": "undo_move_to_pane" },
+  { "keys": ["ctrl+w", "ctrl+r"], "command": "redo_move_to_pane" },
+  // { "keys": ["ctrl+w", "ctrl+Z"], "command": "undo_layout" },
+  // { "keys": ["ctrl+w", "ctrl+R"], "command": "redo_layout" },
 
-  // { "keys": ["ctrl+w", "ctrl+z"], "command": "undo_layout" },
-  // { "keys": ["ctrl+w", "ctrl+s"], "command": "save_layout" },
-  // { "keys": ["ctrl+w", "ctrl+shift+s"], "command": "save_layout_to" },
-  // { "keys": ["ctrl+w", "ctrl+o"], "command": "load_layout_from" },
   { "keys": ["ctrl+w", "ctrl+tab"], "command": "cycle_between_panes"},
   { "keys": ["ctrl+w", "ctrl+`"], "command": "reverse_cycle_between_panes"},
 

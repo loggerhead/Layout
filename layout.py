@@ -2,6 +2,7 @@ import os
 import json
 import sublime, sublime_plugin
 
+
 PLUGIN_NAME = 'Layout'
 PACKAGES_PATH = sublime.packages_path()
 PLUGIN_PATH = os.path.join(PACKAGES_PATH, PLUGIN_NAME)
@@ -11,6 +12,7 @@ X_MIN, Y_MIN, X_MAX, Y_MAX = (0, 1, 2, 3)
 
 
 # TODO: remove
+from datetime import datetime
 def q(*args):
 	if args:
 		args = [str(arg) for arg in args]
@@ -21,28 +23,19 @@ def q(*args):
 	with open(os.path.join(PLUGIN_PATH, '_debug.log'), 'a+') as fp:
 		fp.write(s + '\n')
 
-# TODO LIST
-"""
-Enhancement
-	resize pane
-	save as layout file
-	load from layout file
-	undo should track `views`
-	add move to last_view
-	remove ruler when destroy
-	add move and layout history
-	auto close when move last_view
-	auto focus to new pane
-	close file when pane destroyed
-"""
+
+def init_environment():
+	if not os.path.isdir(LAYOUT_PATH):
+		os.mkdir(LAYOUT_PATH)
+
+init_environment()
+
 
 def Settings():
     return sublime.load_settings('%s.sublime-settings' % PLUGIN_NAME)
 
 
 class PaneCommand(sublime_plugin.WindowCommand):
-	HISTORY = []
-
 	@property
 	def layout(self):
 		return self.window.get_layout()
@@ -54,6 +47,55 @@ class PaneCommand(sublime_plugin.WindowCommand):
 	@property
 	def current_group(self):
 		return self.window.active_group()
+
+	# TODO: replace
+	def get_open_files(self):
+		open_files = []
+		for i in range(len(self.cells)):
+			views = self.window.views_in_group(i)
+			open_files.append([])
+			for view in views:
+				file_path = view.file_name()
+				open_files[i].append(file_path)
+		return open_files
+
+	def save_layout_to_file(self, filename):
+		layout = self.layout
+		layout['views'] = []
+		layout['active_group'] = self.current_group
+
+		def view_to_jsonable(view):
+			return dict(
+				file_name=view.file_name(),
+				name=view.name(),
+				is_read_only=view.is_read_only(),
+				is_scratch=view.is_scratch()
+			)
+
+		for i in range(len(layout['cells'])):
+			views = self.window.views_in_group(i)
+			views = [view_to_jsonable(view) for view in views]
+			layout['views'].append(views)
+
+		with open(os.path.join(LAYOUT_PATH, '%s.layout' % filename), 'w') as fp:
+			fp.write(json.dumps(layout, indent=2))
+
+	# TODO
+	def load_layout_from_json(self, data):
+		pass
+
+	def fixed_set_layout(self, layout):
+		# A bug was introduced in Sublime Text 3, sometime before 3053,
+		# in that it changes the active group to 0 when the layout is changed.
+		group = min(self.current_group, self.window.num_groups() - 1)
+		self.window.set_layout(layout)
+		self.fixed_focus_group(group)
+
+	def fixed_focus_group(self, group):
+		# I have no idea why this is work instead of
+		# `self.window.focus_group(group)`
+		sublime.set_timeout(lambda : self.window.focus_group(group), 0)
+		sublime.set_timeout(lambda : self.window.focus_group(group), 0)
 
 	def get_adjacent_cells(self, group):
 		cells = self.cells
@@ -84,108 +126,77 @@ class PaneCommand(sublime_plugin.WindowCommand):
 
 		return adjacent_cells
 
-	def get_open_files(self):
-		open_files = []
-		for i in range(len(self.cells)):
-			views = self.window.views_in_group(i)
-			open_files.append([])
-			for view in views:
-				file_path = view.file_name()
-				open_files[i].append(file_path)
-		return open_files
+	def layout_to_value_cells(self, layout):
+		value_cells = []
+		rows = layout['rows']
+		cols = layout['cols']
+		for x1, y1, x2, y2 in layout['cells']:
+			value_cells.append([cols[x1], rows[y1], cols[x2], rows[y2]])
+		return value_cells
 
-	def layout_to_json(self):
-		layout = self.layout
-		layout['views'] = []
-		for i in range(len(layout['cells'])):
-			views = self.window.views_in_group(i)
-			layout['views'].append(views)
-		return json.dumps(layout, indent=2)
+	def value_cells_to_layout(self, value_cells):
+		rows = set()
+		cols = set()
+		for c1, r1, c2, r2 in value_cells:
+			cols.add(c1)
+			rows.add(r1)
+			cols.add(c2)
+			rows.add(r2)
+		cols = list(cols)
+		rows = list(rows)
+		cols.sort()
+		rows.sort()
 
-	def json_to_layout(self, data):
-		return json.loads(data)
+		max_x = 0
+		cells = []
+		for c1, r1, c2, r2 in value_cells:
+			x1, y1, x2, y2 = cols.index(c1), rows.index(r1), cols.index(c2), rows.index(r2)
+			cells.append([x1, y1, x2, y2])
+			if max_x < x2:
+				max_x = x2
+		# cells arrange by y1 first then x1
+		cells.sort(key=lambda c: c[Y_MIN] * (max_x + 1) + c[X_MIN])
 
-	def save_layout_to_file(self, filename):
-		# TODO
-		pass
-
-	def load_layout_from_file(self, filename):
-		# TODO
-		pass
-
-	def undo_layout(self):
-		last_layout = self.HISTORY.pop()
-		self.fixed_set_layout(last_layout)
-
-	def add_history(self):
-		max_items = Settings().get('max_history_layout')
-		self.HISTORY.append(self.layout)
-		if len(self.HISTORY) > max_items:
-			self.HISTORY.pop(0)
-
-	def fixed_set_layout(self, layout):
-		# A bug was introduced in Sublime Text 3, sometime before 3053,
-		# in that it changes the active group to 0 when the layout is changed.
-		group = min(self.current_group, self.window.num_groups() - 1)
-		self.window.set_layout(layout)
-		self.window.focus_group(group)
-
-	def fixed_focus_group(self, group):
-		# I have no idea why this is work instead of
-		# `self.window.focus_group(group)`
-		sublime.set_timeout(lambda : self.window.focus_group(group), 0)
-		sublime.set_timeout(lambda : self.window.focus_group(group), 0)
+		layout = {
+			'cols': cols,
+			'rows': rows,
+			'cells': cells
+		}
+		return layout
 
 	def split_pane(self, group, pattern, scale):
 		rows = self.layout['rows']
 		cols = self.layout['cols']
 		coord_cells = self.layout['cells']
-		value_cells = []
 
-		# (x1, y1) is top left point, (x2, y2) is bottom right point
 		try:
+			# (x1, y1) is top left point, (x2, y2) is bottom right point
 			x1, y1, x2, y2 = coord_cells.pop(group)
+			c1, r1, c2, r2 = cols[x1], rows[y1], cols[x2], rows[y2]
 		except:
 			return
-		c1, r1, c2, r2 = cols[x1], rows[y1], cols[x2], rows[y2]
-		for x1, y1, x2, y2 in coord_cells:
-			value_cells.append([cols[x1], rows[y1], cols[x2], rows[y2]])
+		value_cells = self.layout_to_value_cells({
+			'rows': rows,
+			'cols': cols,
+			'cells': coord_cells
+		})
 
-		new_col = 0
-		new_row = 0
 		# vertical
 		if pattern == 'v':
-			new_col = (c2 - c1) * scale + c1
-			old_cell = [c1, r1, new_col, r2]
-			new_cell = [new_col, r1, c2, r2]
+			c = (c2 - c1) * scale + c1
+			old_cell = [c1, r1, c, r2]
+			new_cell = [c, r1, c2, r2]
 		# horizontal
 		elif pattern == 'h':
-			new_row = (r2 - r1) * scale + r1
-			old_cell = [c1, r1, c2, new_row]
-			new_cell = [c1, new_row, c2, r2]
+			r = (r2 - r1) * scale + r1
+			old_cell = [c1, r1, c2, r]
+			new_cell = [c1, r, c2, r2]
 		else:
 			return
 
-		rows.append(new_row)
-		rows = list(set(rows))
-		cols.append(new_col)
-		cols = list(set(cols))
-		rows.sort()
-		cols.sort()
 		value_cells.append(old_cell)
 		value_cells.append(new_cell)
-		coord_cells = []
-		for c1, r1, c2, r2 in value_cells:
-			x1, y1, x2, y2 = cols.index(c1), rows.index(r1), cols.index(c2), rows.index(r2)
-			coord_cells.append([x1, y1, x2, y2])
-		# sort by Y first then X
-		coord_cells.sort(key=lambda c: c[Y_MIN] * 100 + c[X_MIN])
-
-		layout = {
-			"rows": rows,
-			"cols": cols,
-			"cells": coord_cells
-		}
+		layout = self.value_cells_to_layout(value_cells)
 		self.fixed_set_layout(layout)
 
 	def destroy_pane(self, group):
@@ -226,6 +237,12 @@ class PaneCommand(sublime_plugin.WindowCommand):
 				cells[i][Y_MIN] = y1
 
 		layout['cells'] = cells
+		# remove extra rulers of column or row and reset cells
+		value_cells = self.layout_to_value_cells(layout)
+		layout = self.value_cells_to_layout(value_cells)
+		# kill all views in pane
+		if Settings().get('auto_close_view'):
+			self.window.run_command('close')
 		self.fixed_set_layout(layout)
 
 	def get_closest_group(self, direction):
@@ -270,23 +287,72 @@ class PaneCommand(sublime_plugin.WindowCommand):
 		return group, pattern, scale
 
 
-class DebugCommand(PaneCommand):
-	def run(self):
-		sublime.log_commands(True)
-		self.split_pane(0, 'h', 0.8)
-		self.split_pane(0, 'v', 0.5)
-		self.split_pane(1, 'h', 0.3)
-		self.split_pane(3, 'v', 0.3)
-		self.split_pane(4, 'v', 0.8)
+class Recordable(object):
+	def do_run(self, *args, **kwargs):
+		raise NotImplemented
+
+	@classmethod
+	def add_history(cls, item):
+		if len(cls.history) > cls.max_history_num:
+			cls.history.pop(0)
+		cls.history.append(item)
+
+	@classmethod
+	def add_redo_history(cls, item):
+		if len(cls.redo_history) > cls.max_history_num:
+			cls.redo_history.pop(0)
+		cls.redo_history.append(item)
+
+	@classmethod
+	def next_record(cls):
+		item = cls.history.pop()
+		cls.add_redo_history(item)
+		return item
+
+	@classmethod
+	def prev_record(cls):
+		item = cls.redo_history.pop()
+		cls.add_history(item)
+		return item
+
+	@classmethod
+	def clear_history(cls):
+		cls.history = []
+		cls.redo_history = []
 
 
-class MoveToPaneCommand(PaneCommand):
-	def run(self, direction):
+class MoveableCommand(PaneCommand, Recordable):
+	# history of move between panes
+	history = []
+	redo_history = []
+	max_history_num = Settings().get('max_move_history') or 100
+
+	def run(self, *args, **kwargs):
+		self.add_history(self.current_group)
+		self.do_run(*args, **kwargs)
+
+
+class RevocableCommand(PaneCommand, Recordable):
+	# history of move between panes
+	history = []
+	redo_history = []
+	max_history_num = Settings().get('max_layout_history') or 10
+
+	def run(self, *args, **kwargs):
+		# TODO
+		self.history.append(self.window)
+		# Clear move history every time
+		MoveableCommand.clear_history()
+		self.do_run(*args, **kwargs)
+
+
+class MoveToPaneCommand(MoveableCommand):
+	def do_run(self, direction):
 		self.move_to_pane(direction)
 
 
-class CycleBetweenPanesCommand(PaneCommand):
-	def run(self):
+class CycleBetweenPanesCommand(MoveableCommand):
+	def do_run(self):
 		num_groups = self.window.num_groups()
 		next_group = self.current_group + 1
 		if next_group > num_groups - 1:
@@ -294,8 +360,8 @@ class CycleBetweenPanesCommand(PaneCommand):
 		self.fixed_focus_group(next_group)
 
 
-class ReverseCycleBetweenPanesCommand(PaneCommand):
-	def run(self):
+class ReverseCycleBetweenPanesCommand(MoveableCommand):
+	def do_run(self):
 		num_groups = self.window.num_groups()
 		prev_group = self.current_group - 1
 		if prev_group < 0:
@@ -303,15 +369,15 @@ class ReverseCycleBetweenPanesCommand(PaneCommand):
 		self.fixed_focus_group(prev_group)
 
 
-class SplitPaneCommand(PaneCommand):
-	def run(self, commands, files=[]):
+class SplitPaneCommand(RevocableCommand):
+	def do_run(self, commands):
 		for command in commands:
 			group, pattern, scale = self.get_options(command)
 			self.split_pane(group, pattern, scale)
 
 
-class CombineAllPanesCommand(PaneCommand):
-	def run(self):
+class CombineAllPanesCommand(RevocableCommand):
+	def do_run(self):
 		self.fixed_set_layout({
 			'rows': [0, 1],
 			'cols': [0, 1],
@@ -319,33 +385,69 @@ class CombineAllPanesCommand(PaneCommand):
 		})
 
 
-class DestroyCurrentPaneCommand(PaneCommand):
-	def run(self):
+class DestroyCurrentPaneCommand(RevocableCommand):
+	def do_run(self):
 		self.destroy_pane(self.current_group)
 
 
-class CloneFileToPaneCommand(PaneCommand):
-	def run(self, direction):
+class CloneFileToPaneCommand(RevocableCommand):
+	def do_run(self, direction):
 		self.clone_file_to_pane(direction)
 
 
-class CarryFileToPaneCommand(PaneCommand):
-	def run(self, direction):
+class CarryFileToPaneCommand(RevocableCommand):
+	def do_run(self, direction):
 		self.carry_file_to_pane(direction)
 
 
-class LoadLayoutCommand(PaneCommand):
+class LoadLayoutFromCommand(PaneCommand):
+	def load_layout_from_file(self, filename):
+		data = open(os.path.join(LAYOUT_PATH, filename + '.layout'), 'r').read()
+		self.load_layout_from_json(data)
+
+	def run(self, filename=None):
+		if filename:
+			self.load_layout_from_file(filename)
+		else:
+			view = self.window.show_input_panel(
+				caption='Load from Layout File',
+				initial_text='',
+				on_done=self.load_layout_from_file,
+				on_change=None,
+				on_cancel=None
+			)
+		sublime.status_message('Load from `%s`!' % filename)
+
+
+class SaveLayoutAsCommand(PaneCommand):
+	def run(self, filename=None):
+		if filename:
+			self.save_layout_to_file(filename)
+		else:
+			view = self.window.show_input_panel(
+				caption='Save as Layout File',
+				initial_text='',
+				on_done=self.save_layout_to_file,
+				on_change=None,
+				on_cancel=None
+			)
+		sublime.status_message('Save to `%s`!' % filename)
+
+
+class UndoMoveToPaneCommand(PaneCommand):
 	def run(self):
-		# TODO
-		pass
+		group = MoveableCommand.next_record()
+		self.fixed_focus_group(group)
 
 
-class SaveLayoutCommand(PaneCommand):
-	def run(self):
-		# TODO
-		pass
-
-
-class UndoLayoutCommand(PaneCommand):
-	def run(self):
-		self.undo_layout()
+# TODO
+class AutoDestroyPane(sublime_plugin.EventListener):
+	def on_close(self, view):
+		if not Settings().get('auto_destroy_pane'):
+			return
+		window = view.window()
+		q()
+		q(window)
+		if not window:
+			q(window.views())
+			# window.run_command('destroy_current_pane')
