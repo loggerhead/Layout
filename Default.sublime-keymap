@@ -1,14 +1,14 @@
 [
-  { "keys": ["ctrl+w", "ctrl+s"], "command": "save_layout_as", "args": {"filename": "_last_one"} },
-  { "keys": ["ctrl+w", "ctrl+shift+s"], "command": "save_layout_as" },
-  { "keys": ["ctrl+w", "ctrl+o"], "command": "load_layout_from", "args": {"filename": "_last_one"} },
-  { "keys": ["ctrl+w", "ctrl+z"], "command": "undo_move_to_pane" },
-  { "keys": ["ctrl+w", "ctrl+r"], "command": "redo_move_to_pane" },
-  // { "keys": ["ctrl+w", "ctrl+Z"], "command": "undo_layout" },
-  // { "keys": ["ctrl+w", "ctrl+R"], "command": "redo_layout" },
+  { "keys": ["ctrl+w", "s"], "command": "save_layout_as", "args": {"filename": "_last"} },
+  { "keys": ["ctrl+w", "S"], "command": "save_layout_as" },
+  { "keys": ["ctrl+w", "o"], "command": "load_layout_from", "args": {"filename": "_last"} },
+  { "keys": ["ctrl+w", "z"], "command": "undo_move_to_pane" },
+  { "keys": ["ctrl+w", "r"], "command": "redo_move_to_pane" },
+  { "keys": ["ctrl+w", "Z"], "command": "undo_layout_pane" },
+  { "keys": ["ctrl+w", "R"], "command": "redo_layout_pane" },
 
-  { "keys": ["ctrl+w", "ctrl+tab"], "command": "cycle_between_panes"},
-  { "keys": ["ctrl+w", "ctrl+`"], "command": "reverse_cycle_between_panes"},
+  { "keys": ["ctrl+w", "tab"], "command": "cycle_between_panes"},
+  { "keys": ["ctrl+w", "`"], "command": "reverse_cycle_between_panes"},
 
   { "keys": ["ctrl+w", "|"], "command": "split_pane", "args": {"commands": ["v"]} },
   { "keys": ["ctrl+w", "-"], "command": "split_pane", "args": {"commands": ["h"]} },

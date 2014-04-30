@@ -48,20 +48,22 @@ class PaneCommand(sublime_plugin.WindowCommand):
 	def current_group(self):
 		return self.window.active_group()
 
-	# TODO: replace
-	def get_open_files(self):
-		open_files = []
-		for i in range(len(self.cells)):
-			views = self.window.views_in_group(i)
-			open_files.append([])
-			for view in views:
-				file_path = view.file_name()
-				open_files[i].append(file_path)
-		return open_files
+	def fixed_set_layout(self, layout):
+		# A bug was introduced in Sublime Text 3, sometime before 3053,
+		# in that it changes the active group to 0 when the layout is changed.
+		group = min(self.current_group, self.window.num_groups() - 1)
+		self.window.set_layout(layout)
+		self.fixed_focus_group(group)
 
-	def save_layout_to_file(self, filename):
+	def fixed_focus_group(self, group):
+		# I have no idea why this is work instead of
+		# `self.window.focus_group(group)`
+		sublime.set_timeout(lambda : self.window.focus_group(group), 0)
+		sublime.set_timeout(lambda : self.window.focus_group(group), 0)
+
+	def layout_to_json(self):
 		layout = self.layout
-		layout['views'] = []
+		layout['views_in_group'] = []
 		layout['active_group'] = self.current_group
 
 		def view_to_jsonable(view):
@@ -75,27 +77,28 @@ class PaneCommand(sublime_plugin.WindowCommand):
 		for i in range(len(layout['cells'])):
 			views = self.window.views_in_group(i)
 			views = [view_to_jsonable(view) for view in views]
-			layout['views'].append(views)
+			layout['views_in_group'].append(views)
 
-		with open(os.path.join(LAYOUT_PATH, '%s.layout' % filename), 'w') as fp:
-			fp.write(json.dumps(layout, indent=2))
+		return json.dumps(layout, indent=2)
 
 	# TODO
-	def load_layout_from_json(self, data):
-		pass
+	def load_layout_from_json(self, layout):
+		layout = json.loads(layout)
+		self.fixed_set_layout(layout)
 
-	def fixed_set_layout(self, layout):
-		# A bug was introduced in Sublime Text 3, sometime before 3053,
-		# in that it changes the active group to 0 when the layout is changed.
-		group = min(self.current_group, self.window.num_groups() - 1)
-		self.window.set_layout(layout)
-		self.fixed_focus_group(group)
+		def dict_to_view(view_dict):
+			view = self.window.open_file(view_dict['file_name'])
+			view.set_scratch(view_dict['is_scratch'])
+			view.set_name(view_dict['name'])
+			view.set_read_only(view_dict['is_read_only'])
+			return view
 
-	def fixed_focus_group(self, group):
-		# I have no idea why this is work instead of
-		# `self.window.focus_group(group)`
-		sublime.set_timeout(lambda : self.window.focus_group(group), 0)
-		sublime.set_timeout(lambda : self.window.focus_group(group), 0)
+		for i in range(len(layout['cells'])):
+			self.fixed_focus_group(i)
+			views = layout['views_in_group'][i]
+			views = [dict_to_view(view) for view in views]
+
+		self.fixed_focus_group(0)
 
 	def get_adjacent_cells(self, group):
 		cells = self.cells
@@ -306,13 +309,11 @@ class Recordable(object):
 	@classmethod
 	def next_record(cls):
 		item = cls.history.pop()
-		cls.add_redo_history(item)
 		return item
 
 	@classmethod
 	def prev_record(cls):
 		item = cls.redo_history.pop()
-		cls.add_history(item)
 		return item
 
 	@classmethod
@@ -339,8 +340,7 @@ class RevocableCommand(PaneCommand, Recordable):
 	max_history_num = Settings().get('max_layout_history') or 10
 
 	def run(self, *args, **kwargs):
-		# TODO
-		self.history.append(self.window)
+		self.add_history(self.layout_to_json())
 		# Clear move history every time
 		MoveableCommand.clear_history()
 		self.do_run(*args, **kwargs)
@@ -402,8 +402,9 @@ class CarryFileToPaneCommand(RevocableCommand):
 
 class LoadLayoutFromCommand(PaneCommand):
 	def load_layout_from_file(self, filename):
-		data = open(os.path.join(LAYOUT_PATH, filename + '.layout'), 'r').read()
-		self.load_layout_from_json(data)
+		filename = os.path.join(LAYOUT_PATH, filename + '.layout')
+		layout = open(filename, 'r').read()
+		self.load_layout_from_json(layout)
 
 	def run(self, filename=None):
 		if filename:
@@ -416,10 +417,15 @@ class LoadLayoutFromCommand(PaneCommand):
 				on_change=None,
 				on_cancel=None
 			)
-		sublime.status_message('Load from `%s`!' % filename)
+		sublime.status_message('Load Layout named `%s`' % filename)
 
 
 class SaveLayoutAsCommand(PaneCommand):
+	def save_layout_to_file(self, filename):
+		layout = self.layout_to_json()
+		with open(os.path.join(LAYOUT_PATH, '%s.layout' % filename), 'w') as fp:
+			fp.write(layout)
+
 	def run(self, filename=None):
 		if filename:
 			self.save_layout_to_file(filename)
@@ -431,14 +437,35 @@ class SaveLayoutAsCommand(PaneCommand):
 				on_change=None,
 				on_cancel=None
 			)
-		sublime.status_message('Save to `%s`!' % filename)
+		sublime.status_message('Saved Current Layout as `%s`' % filename)
 
 
 class UndoMoveToPaneCommand(PaneCommand):
 	def run(self):
+		MoveableCommand.add_redo_history(self.current_group)
 		group = MoveableCommand.next_record()
 		self.fixed_focus_group(group)
 
+
+class RedoMoveToPaneCommand(PaneCommand):
+	def run(self):
+		MoveableCommand.add_history(self.current_group)
+		group = MoveableCommand.prev_record()
+		self.fixed_focus_group(group)
+
+
+class UndoLayoutPaneCommand(PaneCommand):
+	def run(self):
+		RevocableCommand.add_redo_history(self.layout_to_json())
+		layout = RevocableCommand.next_record()
+		self.load_layout_from_json(layout)
+
+
+class RedoLayoutPaneCommand(PaneCommand):
+	def run(self):
+		RevocableCommand.add_history(self.layout_to_json())
+		layout = RevocableCommand.prev_record()
+		self.load_layout_from_json(layout)
 
 # TODO
 class AutoDestroyPane(sublime_plugin.EventListener):
