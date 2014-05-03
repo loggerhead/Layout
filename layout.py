@@ -7,21 +7,7 @@ PLUGIN_NAME = 'Layout'
 PACKAGES_PATH = sublime.packages_path()
 PLUGIN_PATH = os.path.join(PACKAGES_PATH, PLUGIN_NAME)
 LAYOUT_PATH = os.path.join(PLUGIN_PATH, 'layouts')
-
 X_MIN, Y_MIN, X_MAX, Y_MAX = (0, 1, 2, 3)
-
-
-# TODO: remove
-from datetime import datetime
-def q(*args):
-	if args:
-		args = [str(arg) for arg in args]
-		s = '\t'.join(args)
-		s = str(datetime.now()) + '\n\t' + s
-	else:
-		s = '-' * 80
-	with open(os.path.join(PLUGIN_PATH, '_debug.log'), 'a+') as fp:
-		fp.write(s + '\n')
 
 
 def init_environment():
@@ -81,22 +67,21 @@ class PaneCommand(sublime_plugin.WindowCommand):
 
 		return json.dumps(layout, indent=2)
 
-	# TODO
 	def load_layout_from_json(self, layout):
 		layout = json.loads(layout)
 		self.fixed_set_layout(layout)
 
-		def dict_to_view(view_dict):
+		def dict_to_view(view_dict, group, index):
 			view = self.window.open_file(view_dict['file_name'])
 			view.set_scratch(view_dict['is_scratch'])
 			view.set_name(view_dict['name'])
 			view.set_read_only(view_dict['is_read_only'])
+			self.window.set_view_index(view, group, index)
 			return view
 
-		for i in range(len(layout['cells'])):
-			self.fixed_focus_group(i)
-			views = layout['views_in_group'][i]
-			views = [dict_to_view(view) for view in views]
+		for group in range(len(layout['cells'])):
+			views = layout['views_in_group'][group]
+			views = [dict_to_view(views[i], group, i) for i in range(len(views))]
 
 		self.fixed_focus_group(0)
 
@@ -160,12 +145,59 @@ class PaneCommand(sublime_plugin.WindowCommand):
 		# cells arrange by y1 first then x1
 		cells.sort(key=lambda c: c[Y_MIN] * (max_x + 1) + c[X_MIN])
 
-		layout = {
-			'cols': cols,
-			'rows': rows,
-			'cells': cells
-		}
+		layout = {'cols': cols, 'rows': rows, 'cells': cells}
 		return layout
+
+	def resize_pane(self, group, direction, step):
+		MIN_GAP = 0.15
+
+		layout = self.layout
+		rows = layout['rows']
+		cols = layout['cols']
+		cells = layout['cells']
+		x1, y1, x2, y2 = cells[group]
+		max_x, max_y = len(cols) - 1, len(rows) - 1
+
+		# resize by adjust ruler
+		if direction == 'left':
+			# if is border
+			if x1 == 0 and x2 == max_x:
+				return
+			# littler x
+			lx = 0 if x1 - 1 < 0 else x1 - 1
+			if x1 > 0 and cols[x1] - cols[lx] > MIN_GAP:
+				cols[x1] -= step
+			if x1 == 0 and cols[x2] - cols[x1] > MIN_GAP:
+				cols[x2] -= step
+		elif direction == 'right':
+			if x2 == max_x and x1 == 0:
+				return
+			# greater x
+			gx = 1 if x2 + 1 > max_x else x2 + 1
+			if x2 < max_x and cols[gx] - cols[x2] > MIN_GAP:
+				cols[x2] += step
+			if x2 == max_x and cols[x2] - cols[x1] > MIN_GAP:
+				cols[x1] += step
+		elif direction == 'up':
+			if y1 == 0 and y2 == max_y:
+				return
+			ly = 0 if y1 - 1 < 0 else y1 - 1
+			if y1 > 0 and rows[y1] - rows[ly] > MIN_GAP:
+				rows[y1] -= step
+			if y1 == 0 and rows[y2] - rows[y1] > MIN_GAP:
+				rows[y2] -= step
+		elif direction == 'down':
+			if y2 == max_y and y1 == 0:
+				return
+			gy = 1 if y2 + 1 > max_y else y2 + 1
+			if y2 < max_y and rows[gy] - rows[y2] > MIN_GAP:
+				rows[y2] += step
+			if y2 == max_y and rows[y2] - rows[y1] > MIN_GAP:
+				rows[y1] += step
+		else:
+			return
+		layout = {'rows': rows, 'cols': cols, 'cells': cells}
+		self.fixed_set_layout(layout)
 
 	def split_pane(self, group, pattern, scale):
 		rows = self.layout['rows']
@@ -223,21 +255,22 @@ class PaneCommand(sublime_plugin.WindowCommand):
 					(x1 == cs[0][X_MIN] and x2 == cs[-1][X_MAX])):
 				extend_direction = dir
 
-		if not extend_direction:
+		if extend_direction:
+			pair = {
+				'left': (X_MAX, x2),
+				'right': (X_MIN, x1),
+				'up': (Y_MAX, y2),
+				'down': (Y_MIN, y1),
+			}[extend_direction]
+		else:
 			return
+
 		for extend_cell in adjacent_cells[extend_direction]:
 			try:
 				i = cells.index(extend_cell)
 			except:
 				continue
-			if extend_direction == 'left':
-				cells[i][X_MAX] = x2
-			elif extend_direction == 'right':
-				cells[i][X_MIN] = x1
-			elif extend_direction == 'up':
-				cells[i][Y_MAX] = y2
-			elif extend_direction == 'down':
-				cells[i][Y_MIN] = y1
+			cells[i][pair[0]] = pair[1]
 
 		layout['cells'] = cells
 		# remove extra rulers of column or row and reset cells
@@ -400,6 +433,11 @@ class CarryFileToPaneCommand(RevocableCommand):
 		self.carry_file_to_pane(direction)
 
 
+class ResizePaneCommand(PaneCommand):
+	def run(self, direction, step=1):
+		self.resize_pane(self.current_group, direction, step / 100)
+
+
 class LoadLayoutFromCommand(PaneCommand):
 	def load_layout_from_file(self, filename):
 		filename = os.path.join(LAYOUT_PATH, filename + '.layout')
@@ -466,15 +504,3 @@ class RedoLayoutPaneCommand(PaneCommand):
 		RevocableCommand.add_history(self.layout_to_json())
 		layout = RevocableCommand.prev_record()
 		self.load_layout_from_json(layout)
-
-# TODO
-class AutoDestroyPane(sublime_plugin.EventListener):
-	def on_close(self, view):
-		if not Settings().get('auto_destroy_pane'):
-			return
-		window = view.window()
-		q()
-		q(window)
-		if not window:
-			q(window.views())
-			# window.run_command('destroy_current_pane')
