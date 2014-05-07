@@ -1,17 +1,25 @@
-Layout
-======
+#Layout
 
-A sublime text 3 plugin for powerful pane layout.
+A sublime text 3 plugin for window's layout.
 
-The idea is stolen from `tmux` and `Origami`.
+The idea is stolen from [tmux](https://github.com/ThomasAdam/tmux) and [Origami](https://github.com/SublimeText/Origami).
 
-Usage
------
+#Usage
+
+##What can it do?
+
+save current layout  
+load layout from file  
+move between panes  
+undo and redo  
+destroy current pane  
+split pane  
+carry or clone current file to pane  
+resize pane  
 
 
+#License
 
-License
--------
 ```
             DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
                     Version 2, December 2004
