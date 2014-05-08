@@ -1,6 +1,6 @@
 #Layout
 
-A sublime text 3 plugin for window's layout.
+A sublime text 3 plugin for layout adjustment of window.
 
 The idea is stolen from [tmux](https://github.com/ThomasAdam/tmux) and [Origami](https://github.com/SublimeText/Origami).
 
@@ -8,14 +8,14 @@ The idea is stolen from [tmux](https://github.com/ThomasAdam/tmux) and [Origami]
 
 ##What can it do?
 
-save current layout  
-load layout from file  
-move between panes  
-undo and redo  
-destroy current pane  
-split pane  
-carry or clone current file to pane  
-resize pane  
+ * save current layout  
+ * load layout from file  
+ * move between panes  
+ * undo and redo  
+ * destroy current pane  
+ * split pane  
+ * carry or clone current file to pane  
+ * resize pane  
 
 
 #License
