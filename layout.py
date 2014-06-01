@@ -3,7 +3,7 @@ import json
 import sublime, sublime_plugin
 
 
-PLUGIN_NAME = 'Layout'
+PLUGIN_NAME = 'sublime-layout'
 PACKAGES_PATH = sublime.packages_path()
 PLUGIN_PATH = os.path.join(PACKAGES_PATH, PLUGIN_NAME)
 LAYOUT_PATH = os.path.join(PLUGIN_PATH, 'layouts')
