@@ -3,10 +3,11 @@ import json
 import sublime, sublime_plugin
 
 
-PLUGIN_NAME = 'sublime-layout'
+PLUGIN_PATH = os.path.abspath(os.path.dirname(__file__))
+PLUGIN_NAME = os.path.basename(PLUGIN_PATH)
 PACKAGES_PATH = sublime.packages_path()
-PLUGIN_PATH = os.path.join(PACKAGES_PATH, PLUGIN_NAME)
 LAYOUT_PATH = os.path.join(PLUGIN_PATH, 'layouts')
+
 X_MIN, Y_MIN, X_MAX, Y_MAX = (0, 1, 2, 3)
 
 

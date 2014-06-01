@@ -1,8 +1,6 @@
 #Layout
 
-A sublime text 3 plugin for layout adjustment of window.
-
-The idea is stolen from [tmux](https://github.com/ThomasAdam/tmux) and [Origami](https://github.com/SublimeText/Origami).
+A sublime text 3 plugin simulating [tmux](https://github.com/ThomasAdam/tmux) and [Origami](https://github.com/SublimeText/Origami) for layout adjustment of window.
 
 #Usage
 
