@@ -1,6 +1,7 @@
 import os
 import json
-import sublime, sublime_plugin
+import sublime
+import sublime_plugin
 
 
 PLUGIN_PATH = os.path.abspath(os.path.dirname(__file__))
