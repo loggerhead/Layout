@@ -1,23 +1,20 @@
 #Layout
-
 A sublime text 3 plugin simulating [tmux](https://github.com/ThomasAdam/tmux) and [Origami](https://github.com/SublimeText/Origami) for layout adjustment of window.
 
+![](https://raw.githubusercontent.com/loggerhead/Layout/master/artwork/example.gif)
+
 #Usage
-
 ##What can it do?
-
- * save current layout  
- * load layout from file  
- * move between panes  
- * undo and redo  
- * destroy current pane  
- * split pane  
- * carry or clone current file to pane  
- * resize pane  
-
+* split pane  
+* resize pane  
+* move between panes  
+* carry or clone current file to pane  
+* destroy current pane  
+* undo and redo  
+* save current layout  
+* load layout from file  
 
 #License
-
 ```
             DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
                     Version 2, December 2004
@@ -32,4 +29,4 @@ A sublime text 3 plugin simulating [tmux](https://github.com/ThomasAdam/tmux) an
    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
   0. You just DO WHAT THE FUCK YOU WANT TO.
-```
+``` 
