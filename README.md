@@ -1,21 +1,21 @@
 #Layout
 A sublime text 3 plugin simulating [tmux](https://github.com/ThomasAdam/tmux) and [Origami](https://github.com/SublimeText/Origami) for layout adjustment of window.
 
-![](https://raw.githubusercontent.com/loggerhead/Layout/master/artwork/example.gif)
+![Example](https://raw.githubusercontent.com/loggerhead/Layout/master/artwork/example.gif)
 
 #Installation
 Use [Package Control](https://packagecontrol.io/) :)
 
 #Usage
 ##What can it do?
-* split pane  
-* resize pane  
-* move between panes  
-* carry or clone current file to pane  
-* destroy current pane  
-* undo and redo  
-* save current layout  
-* load layout from file  
+* Split pane
+* Resize pane
+* Move between panes
+* Carry or clone current file to pane
+* Destroy current pane
+* Undo and redo
+* Save current layout
+* Load layout from file
 
 #License
 ```
@@ -32,4 +32,4 @@ Use [Package Control](https://packagecontrol.io/) :)
    TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 
   0. You just DO WHAT THE FUCK YOU WANT TO.
-``` 
+```
