@@ -3,6 +3,9 @@ A sublime text 3 plugin simulating [tmux](https://github.com/ThomasAdam/tmux) an
 
 ![](https://raw.githubusercontent.com/loggerhead/Layout/master/artwork/example.gif)
 
+#Installation
+Use [Package Control](https://packagecontrol.io/) :)
+
 #Usage
 ##What can it do?
 * split pane  
