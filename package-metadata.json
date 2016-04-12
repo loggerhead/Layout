@@ -1,0 +1,10 @@
+{
+  "dependencies": [],
+  "sublime_text": "3",
+  "url": "https://github.com/loggerhead/Layout",
+  "description": "A powerful tmux like layout adjustment plugin",
+  "version": "0.1.1",
+  "platforms": [
+    "*"
+  ]
+}
