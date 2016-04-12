@@ -1,5 +1,5 @@
 #Layout
-A sublime text 3 plugin simulating [tmux](https://github.com/ThomasAdam/tmux) and [Origami](https://github.com/SublimeText/Origami) for layout adjustment of window.
+A powerful plugin to split window like [tmux](https://github.com/ThomasAdam/tmux) for Sublime Text 3, highly inspired by [Origami](https://github.com/SublimeText/Origami).
 
 ![Example](https://raw.githubusercontent.com/loggerhead/Layout/master/artwork/example.gif)
 
@@ -8,12 +8,9 @@ Use [Package Control](https://packagecontrol.io/) :)
 
 #Usage
 ##What can it do?
-* Split pane
-* Resize pane
-* Move between panes
+* Split, resize, destory pane, and move between panes (Yes, same as tmux!)
 * Carry or clone current file to pane
-* Destroy current pane
-* Undo and redo
+* Undo and redo your layout
 * Save current layout
 * Load layout from file
 
