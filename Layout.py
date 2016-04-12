@@ -4,19 +4,16 @@ import sublime
 import sublime_plugin
 
 
-PLUGIN_PATH = os.path.abspath(os.path.dirname(__file__))
-PLUGIN_NAME = os.path.basename(PLUGIN_PATH)
-PACKAGES_PATH = sublime.packages_path()
-LAYOUT_PATH = os.path.join(PLUGIN_PATH, 'layouts')
+PLUGIN_NAME = 'Layout'
+PLUGIN_PATH = os.path.join(sublime.packages_path(), PLUGIN_NAME)
+LAYOUTS_PATH = os.path.join(PLUGIN_PATH, 'layouts')
 
 X_MIN, Y_MIN, X_MAX, Y_MAX = (0, 1, 2, 3)
 
 
-def init_environment():
-	if not os.path.isdir(LAYOUT_PATH):
-		os.mkdir(LAYOUT_PATH)
-
-init_environment()
+def plugin_loaded():
+	if not os.path.isdir(LAYOUTS_PATH):
+		os.mkdir(LAYOUTS_PATH)
 
 
 def Settings():
@@ -35,6 +32,10 @@ class PaneCommand(sublime_plugin.WindowCommand):
 	@property
 	def current_group(self):
 		return self.window.active_group()
+
+	@classmethod
+	def get_layout_path(cls, filename):
+		return os.path.join(LAYOUTS_PATH, filename + '.layout')
 
 	def fixed_set_layout(self, layout):
 		# A bug was introduced in Sublime Text 3, sometime before 3053,
@@ -442,8 +443,7 @@ class ResizePaneCommand(PaneCommand):
 
 class LoadLayoutFromCommand(PaneCommand):
 	def load_layout_from_file(self, filename):
-		filename = os.path.join(LAYOUT_PATH, filename + '.layout')
-		layout = open(filename, 'r').read()
+		layout = open(self.get_layout_path(filename), 'r').read()
 		self.load_layout_from_json(layout)
 
 	def run(self, filename=None):
@@ -463,7 +463,7 @@ class LoadLayoutFromCommand(PaneCommand):
 class SaveLayoutAsCommand(PaneCommand):
 	def save_layout_to_file(self, filename):
 		layout = self.layout_to_json()
-		with open(os.path.join(LAYOUT_PATH, '%s.layout' % filename), 'w') as fp:
+		with open(self.get_layout_path(filename), 'w') as fp:
 			fp.write(layout)
 
 	def run(self, filename=None):
