@@ -70,7 +70,7 @@ You can hold `Alt` key and press down another key to repeat the command.
             DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
                     Version 2, December 2004
 
- Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
+ Copyright (C) 2016 Loggerhead <i@loggerhead.me>
 
  Everyone is permitted to copy and distribute verbatim or modified
  copies of this license document, and changing it is allowed as long
