@@ -1,20 +1,24 @@
-#Layout
+# Layout
+
 A powerful plugin to split window like [tmux](https://github.com/ThomasAdam/tmux) for Sublime Text 3, highly inspired by [Origami](https://github.com/SublimeText/Origami).
 
 ![Example](https://raw.githubusercontent.com/loggerhead/Layout/master/artwork/example.gif)
 
-##What can it do?
+## What can it do?
+
 * Split, resize, destory pane, and move between panes (Yes, same as tmux!)
 * Carry or clone current file to pane
 * Undo and redo your layout
 * Save current layout
 * Load layout from file
 
-#Installation
+# Installation
+
 Use [Package Control](https://packagecontrol.io/) :)
 
-#Usage
-##Split pane
+# Usage
+## Split pane
+
 |   Shortcuts Key    |       Command        |
 |--------------------|----------------------|
 | `Ctrl+W` `Shift+\` | Split vertically     |
@@ -24,7 +28,8 @@ Use [Package Control](https://packagecontrol.io/) :)
 | `Ctrl+W` `1`       | Merge to 1 pane      |
 | `Ctrl+W` `X`       | Destory current pane |
 
-##Move between panes
+## Move between panes
+
 |   Shortcuts Key    |      Command       |
 |--------------------|--------------------|
 | `Ctrl+W` `H` | Move to left pane  |
@@ -33,7 +38,8 @@ Use [Package Control](https://packagecontrol.io/) :)
 | `Ctrl+W` `J` | Move to down pane  |
 | `Ctrl+W` `Tab`     | Move between panes |
 
-##Resize pane
+## Resize pane
+
 | Shortcuts Key |          Command           |
 |---------------|----------------------------|
 | `Alt+H`       | Increase pane toward left  |
@@ -43,7 +49,8 @@ Use [Package Control](https://packagecontrol.io/) :)
 
 You can hold `Alt` key and press down another key to repeat the command.
 
-##Carry file to pane
+## Carry file to pane
+
 |   Shortcuts Key    |         Command          |
 |--------------------|--------------------------|
 | `Ctrl+W` `Shift+H` | Carry file to left pane  |
@@ -55,7 +62,8 @@ You can hold `Alt` key and press down another key to repeat the command.
 | `Ctrl+W` `Ctrl+K`  | Clone file to up pane    |
 | `Ctrl+W` `Ctrl+J`  | Clone file to down pane  |
 
-##Advance commands
+## Advance commands
+
 |   Shortcuts Key    |               Command                |
 |--------------------|--------------------------------------|
 | `Ctrl+W` `S`       | Save current layout to default file  |
@@ -65,7 +73,8 @@ You can hold `Alt` key and press down another key to repeat the command.
 | `Ctrl+W` `Shift+Z` | Undo layout                          |
 
 
-#License
+# License
+
 ```
             DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
                     Version 2, December 2004
